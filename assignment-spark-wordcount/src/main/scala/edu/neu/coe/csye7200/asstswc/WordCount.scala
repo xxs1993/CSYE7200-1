@@ -1,8 +1,7 @@
 package edu.neu.coe.csye7200.asstswc
 
-import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.SparkSession
-
+import org.apache.spark.sql.functions.{stddev_samp, stddev_pop}
+import org.apache.spark.sql._
 /***
   * This is an example of spark word count.
   * Replace the ??? with appropriate implementation and run this file
@@ -13,24 +12,36 @@ import org.apache.spark.sql.SparkSession
 
 object WordCount extends App {
 
-  def wordCount(lines: RDD[String], separator: String) = {
-    lines.flatMap(_.split(separator))
-      .map((_, 1))
-      .reduceByKey(_ + _)
-      .sortBy(-_._2)
-  }
+
 
   override def main(args: Array[String]) = {
-
     val spark = SparkSession
       .builder()
       .appName("WordCount")
       .master("local[*]")
       .getOrCreate()
-
-    if (args.length>0) {
-      wordCount(spark.read.textFile(args.head).rdd," ").take(10).foreach(println(_))
-    }
+    val dataFrame = spark.read.csv("rating.csv")
+    processDataFrame(dataFrame).show()
+    spark.stop()
   }
+
+  /**
+    *
+    * process data : get dataFrame needed
+    * @param df
+    * @return
+    */
+  def processDataFrame(df:DataFrame):DataFrame={
+    implicit val encoder = Encoders.tuple(Encoders.scalaInt,Encoders.scalaDouble)
+    val df1 = df.filter(x=>x.getString(0)!="movieId")
+       .map(x=>(x.getString(0).toInt,x.getString(1).toDouble))(encoder)
+    val df_groupBy = df1.groupBy("_1")
+    val df_std = df_groupBy.agg(stddev_samp("_2")).toDF("movieId","std")
+    val df_avg = df_groupBy.avg("_2").toDF("movieId","average").join(df_std,"movieId").sort("movieId")
+    return df_avg
+  }
+
+
+
 
 }

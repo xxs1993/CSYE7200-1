@@ -22,12 +22,26 @@ class WordCountSpec extends FlatSpec with Matchers with BeforeAndAfter  {
     }
   }
 
-  behavior of "Spark"
+//  behavior of "Spark"
+//
+//  ignore should "work for wordCount" taggedAs Slow in {
+//    WordCount.wordCount(spark.read.textFile(getClass.getResource("movie_metadata.csv").getPath).rdd," ").collect() should matchPattern {
+//      case Array(("Hello",3),("World",3),("Hi",1)) =>
+//    }
+//  }
 
-  ignore should "work for wordCount" taggedAs Slow in {
-    WordCount.wordCount(spark.read.textFile(getClass.getResource("WordCount.txt").getPath).rdd," ").collect() should matchPattern {
-      case Array(("Hello",3),("World",3),("Hi",1)) =>
-    }
+  behavior of "processDataFrame"
+
+  it should "process data " in {
+
+    val dataFrame_ori = spark.read.csv("rating.csv")
+    val dataFrame_groupby = dataFrame_ori.groupBy("_c0").count()
+
+    val dataFrame_process = WordCount.processDataFrame(dataFrame_ori)
+
+    dataFrame_process.columns.length shouldBe 3
+
+    dataFrame_process.count() shouldBe dataFrame_groupby.count()-1
+
   }
-
 }
