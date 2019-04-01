@@ -52,7 +52,7 @@ object MonadOps {
 
   // Hint: write as a for-comprehension, using the method sequence (above).
   // 6 points.
-  def sequence[X](xfs: Seq[Future[X]])(implicit executor: ExecutionContext): Seq[Future[Either[Throwable, X]]] = ??? // TO BE IMPLEMENTED
+  def sequence[X](xfs: Seq[Future[X]])(implicit executor: ExecutionContext): Seq[Future[Either[Throwable, X]]] = for(x <- xfs) yield sequence(x)// TO BE IMPLEMENTED
 
   def sequence[X](xys: Seq[Try[X]]): Try[Seq[X]] = (Try(Seq[X]()) /: xys) {
     (xsy, xy) => for (xs <- xsy; x <- xy) yield xs :+ x
@@ -68,7 +68,10 @@ object MonadOps {
 
   // Hint: this one is a little more tricky. Remember what I mentioned about Either not being a pure monad -- it needs projecting
   // 7 points.
-  def sequence[X](xe: Either[Throwable, X]): Option[X] = ??? // TO BE IMPLEMENTED
+  def sequence[X](xe: Either[Throwable, X]): Option[X] = xe match {
+    case Left(e) => throw  e
+    case Right(x)=> Option(x)
+  }// TO BE IMPLEMENTED
 
   def zip[A, B](ao: Option[A], bo: Option[B]): Option[(A, B)] = for (a <- ao; b <- bo) yield (a, b)
 

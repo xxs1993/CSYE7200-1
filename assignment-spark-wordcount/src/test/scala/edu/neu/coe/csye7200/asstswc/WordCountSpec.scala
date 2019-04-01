@@ -14,6 +14,7 @@ class WordCountSpec extends FlatSpec with Matchers with BeforeAndAfter  {
       .appName("WordCount")
       .master("local[*]")
       .getOrCreate()
+
   }
 
   after {
@@ -38,6 +39,8 @@ class WordCountSpec extends FlatSpec with Matchers with BeforeAndAfter  {
     val dataFrame_groupby = dataFrame_ori.groupBy("_c0").count()
 
     val dataFrame_process = WordCount.processDataFrame(dataFrame_ori)
+
+    dataFrame_ori.columns.length shouldBe 2
 
     dataFrame_process.columns.length shouldBe 3
 

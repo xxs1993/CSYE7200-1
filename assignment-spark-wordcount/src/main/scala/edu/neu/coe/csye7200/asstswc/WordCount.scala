@@ -34,7 +34,7 @@ object WordCount extends App {
   def processDataFrame(df:DataFrame):DataFrame={
     implicit val encoder = Encoders.tuple(Encoders.scalaInt,Encoders.scalaDouble)
     val df1 = df.filter(x=>x.getString(0)!="movieId")
-       .map(x=>(x.getString(0).toInt,x.getString(1).toDouble))(encoder)
+       .map(x=>(x.getString(0).toInt,x.getString(1).toDouble))
     val df_groupBy = df1.groupBy("_1")
     val df_std = df_groupBy.agg(stddev_samp("_2")).toDF("movieId","std")
     val df_avg = df_groupBy.avg("_2").toDF("movieId","average").join(df_std,"movieId").sort("movieId")
